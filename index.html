@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="tl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Balase Compiler - Download</title>
-  <style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Balase Compiler - Download</title>
+<style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', Roboto, Arial, sans-serif; background: #0d1117; color: #c9d1d9; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; margin: 0; }
     .card { background: #161b22; border: 1px solid #30363d; border-radius: 24px; padding: 2rem 1.8rem; width: 100%; max-width: 560px; margin: 0 auto; box-shadow: 0 12px 30px rgba(0,0,0,0.6); }
@@ -16,225 +16,97 @@
     .btn { display: block; width: 100%; max-width: 320px; padding: 1rem 1.2rem; background: #1f6feb; color: white; text-decoration: none; border-radius: 60px; font-weight: 700; font-size: clamp(1.2rem, 4vw, 1.5rem); text-align: center; margin: 0.5rem auto; box-shadow: 0 6px 0 #0f4a9e; transition: 0.2s; border: none; cursor: pointer; }
     .btn:hover { background: #2b7af0; transform: translateY(-2px); }
     .btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #0f4a9e; }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
     .footer-note { margin-top: 1.6rem; font-size: 0.85rem; color: #6e7681; border-top: 1px solid #21262d; padding-top: 1.2rem; text-align: center; }
-    .retry-note { font-size: 0.75rem; color: #8b949e; margin-top: 0.5rem; display: block; text-align: center; }
-  </style>
+    .retry-note { font-size: 0.75rem; color: #8b949e; margin-top: 0.5rem; display: block; text-align: center; min-height: 20px;}
+</style>
 </head>
 <body>
 <div class="card">
-  <h1>⚡ Balase Compiler ⚡</h1>
-  <p class="sub-headline">Arduino Programming gamit sariling Wikang Filipino</p>
-  <div style="text-align:center;"><div class="version">Version: <b>1.0</b></div></div>
-  <div style="text-align:center;"><div class="downloads">📥 Total Downloads: <b id="count">0</b></div></div>
-  
-  <button class="btn" id="downloadBtn">⬇ Download APK</button>
-  <div class="footer-note">✨ responsive • open source • filipino</div>
-  <span class="retry-note" id="statusMessage"></span>
+    <h1>⚡ Balase Compiler ⚡</h1>
+    <p class="sub-headline">Arduino Programming gamit sariling Wikang Filipino</p>
+    <div style="text-align:center;"><div class="version">Version: <b>1.0</b></div></div>
+    <div style="text-align:center;"><div class="downloads">📥 Total Downloads: <b id="count">0</b></div></div>
+    
+    <a class="btn" id="downloadBtn" href="Balase_ACP.apk" download>⬇ Download APK</a>
+    
+    <div class="footer-note">✨ responsive • open source • filipino</div>
+    <span class="retry-note" id="statusMessage"></span>
 </div>
 
 <script>
-(function() {
-    // === FIXED COUNTER API ===
-    // Gumamit ng dalawang reliable na serbisyo + localStorage fallback
-    const COUNTER_KEY = 'balase_compiler_v1_official';
+(function() { 
+    const COUNTER_KEY = 'balase_acp_v1_official'; // Ginawa kong unique para sayo
     const countEl = document.getElementById('count');
     const downloadBtn = document.getElementById('downloadBtn');
     const statusEl = document.getElementById('statusMessage');
 
-    // Utility: format number with commas
-    function formatNumber(num) {
-        if (num === undefined || num === null) return '0';
-        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    function formatNumber(num) { 
+        if (num === undefined || num === null) return '0'; 
+        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ','); 
     }
 
-    // === PRIMARY: CountAPI (with CORS support) ===
     async function fetchCountAPI(increment = false) {
         const amount = increment ? 1 : 0;
         const url = `https://api.countapi.xyz/hit/${COUNTER_KEY}?amount=${amount}`;
         try {
-            const res = await fetch(url, { 
-                method: 'GET',
-                mode: 'cors',
-                cache: 'no-cache',
-                headers: { 'Accept': 'application/json' }
-            });
+            const res = await fetch(url, { mode: 'cors', cache: 'no-cache' });
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = await res.json();
-            if (data && typeof data.value === 'number') {
-                return data.value;
-            }
-            throw new Error('Invalid response from countapi');
-        } catch (e) {
-            console.warn('countapi.xyz failed:', e.message);
-            return null;
-        }
+            return data.value;
+        } catch (e) { return null; }
     }
 
-    // === BACKUP: getloli.com (alternative counter) ===
     async function fetchLoliCount(increment = false) {
         const amount = increment ? 1 : 0;
         const url = `https://count.getloli.com/hit/${COUNTER_KEY}?amount=${amount}`;
         try {
-            const res = await fetch(url, {
-                method: 'GET',
-                mode: 'cors',
-                cache: 'no-cache',
-                headers: { 'Accept': 'application/json' }
-            });
+            const res = await fetch(url, { mode: 'cors', cache: 'no-cache' });
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const data = await res.json();
-            if (data && typeof data.value === 'number') {
-                return data.value;
-            }
-            throw new Error('Invalid response from getloli');
-        } catch (e) {
-            console.warn('getloli.com failed:', e.message);
-            return null;
-        }
+            return data.value;
+        } catch (e) { return null; }
     }
+    
+    function getLocalCount() { try { return parseInt(localStorage.getItem(COUNTER_KEY), 10) || 0; } catch (_) { return 0; } }
+    function setLocalCount(val) { try { localStorage.setItem(COUNTER_KEY, String(val)); } catch (_) {} }
 
-    // === FALLBACK: localStorage (para hindi zero ang count) ===
-    function getLocalCount() {
-        try {
-            const raw = localStorage.getItem(COUNTER_KEY);
-            if (raw) return parseInt(raw, 10) || 0;
-            return 0;
-        } catch (_) { return 0; }
-    }
-
-    function setLocalCount(val) {
-        try {
-            localStorage.setItem(COUNTER_KEY, String(val));
-        } catch (_) {}
-    }
-
-    // === MAIN: get count with fallback chain ===
     async function getCount(increment = false) {
-        // 1. Subukan ang countapi.xyz
         let val = await fetchCountAPI(increment);
-        if (val !== null) {
-            // update local storage para sa susunod na fallback
-            setLocalCount(val);
-            return val;
-        }
-
-        // 2. Subukan ang getloli.com
+        if (val !== null) { setLocalCount(val); return val; }
         val = await fetchLoliCount(increment);
-        if (val !== null) {
-            setLocalCount(val);
-            return val;
-        }
-
-        // 3. Fallback: gamitin ang localStorage (increment locally kung kinakailangan)
+        if (val !== null) { setLocalCount(val); return val; }
         let localVal = getLocalCount();
-        if (increment) {
-            localVal += 1;
-            setLocalCount(localVal);
-        }
-        // kung walang local, balik 0
+        if (increment) { localVal += 1; setLocalCount(localVal); }
         return localVal;
     }
 
-    // === UPDATE UI ===
-    async function updateCounter(increment = false, showStatus = false) {
-        try {
-            const val = await getCount(increment);
-            const displayVal = (val !== null && val !== undefined) ? val : 0;
-            countEl.innerText = formatNumber(displayVal);
-            
-            if (showStatus) {
-                statusEl.innerText = '✅ Download counted!';
-                statusEl.style.color = '#3fb950';
-                setTimeout(() => { statusEl.innerText = ''; }, 3000);
-            }
-            return val;
-        } catch (err) {
-            console.error('Counter error:', err);
-            // Extreme fallback: keep local count
-            let fallback = getLocalCount();
-            if (increment) fallback += 1;
-            setLocalCount(fallback);
-            countEl.innerText = formatNumber(fallback);
-            if (showStatus) {
-                statusEl.innerText = '⚠️ Count updated locally (offline mode)';
-                statusEl.style.color = '#d29922';
-                setTimeout(() => { statusEl.innerText = ''; }, 4000);
-            }
-            return fallback;
-        }
+    async function updateCounter(increment = false) {
+        const val = await getCount(increment);
+        countEl.innerText = formatNumber(val);
+        return val;
     }
 
-    // === LOAD COUNT ON PAGE OPEN ===
-    (function loadInitialCount() {
-        // una, ipakita agad ang local count para hindi blanko
-        const local = getLocalCount();
-        countEl.innerText = formatNumber(local);
-        // tapos i-update gamit ang remote (para accurate)
-        updateCounter(false, false).then(remoteVal => {
-            if (remoteVal !== null && remoteVal !== undefined) {
-                countEl.innerText = formatNumber(remoteVal);
-            }
-        }).catch(() => { /* ignore */ });
-    })();
+    // Load count on open
+    updateCounter(false);
 
-    // === HANDLE DOWNLOAD CLICK ===
+    // Handle Download Click
     let isProcessing = false;
-    downloadBtn.addEventListener('click', async function(e) {
-        e.preventDefault(); // para hindi mag-default ang button
-        
-        if (isProcessing) {
-            statusEl.innerText = '⏳ Please wait...';
-            statusEl.style.color = '#d29922';
-            setTimeout(() => { statusEl.innerText = ''; }, 2000);
-            return;
-        }
-        
+    downloadBtn.addEventListener('click', async function(e) { 
+        if (isProcessing) return;
         isProcessing = true;
         downloadBtn.disabled = true;
-        downloadBtn.style.opacity = '0.7';
-        statusEl.innerText = '⏳ Counting download...';
-        statusEl.style.color = '#8b949e';
-
-        try {
-            // Increment counter (with retry logic)
-            const val = await updateCounter(true, true);
-            // Simulate download (since walang actual APK, we just show success)
-            // Pero gusto natin mag-download ng image? (as per original href="img.jpg")
-            // Gumawa tayo ng fake download para sa demo
-            const link = document.createElement('a');
-            link.download = 'balase_compiler_v1.apk';
-            link.href = 'data:text/plain;charset=utf-8,Balase+Compiler+APK+(demo)';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            statusEl.innerText = '✅ Download started! +1 count';
-            statusEl.style.color = '#3fb950';
-            setTimeout(() => { statusEl.innerText = ''; }, 4000);
-        } catch (err) {
-            console.error('Download error:', err);
-            statusEl.innerText = '⚠️ Error, but count may still be updated.';
-            statusEl.style.color = '#d29922';
-            setTimeout(() => { statusEl.innerText = ''; }, 4000);
-        } finally {
+        statusEl.innerText = '⏳ Counting...';
+        
+        await updateCounter(true); // +1 muna sa counter
+        
+        statusEl.innerText = '✅ Download started!';
+        setTimeout(() => { 
+            statusEl.innerText = ''; 
             isProcessing = false;
             downloadBtn.disabled = false;
-            downloadBtn.style.opacity = '1';
-        }
-    });
-
-    // Optional: kung gusto natin mag-retry kung nag-fail ang initial load
-    // mag-reload after 5 seconds kung zero at may internet
-    setTimeout(() => {
-        const currentText = countEl.innerText.replace(/,/g, '');
-        if (currentText === '0' || currentText === '') {
-            // subukan ulit kumuha ng count
-            updateCounter(false, false).then(val => {
-                if (val > 0) countEl.innerText = formatNumber(val);
-            });
-        }
-    }, 5000);
-
+        }, 3000);
+    }); 
 })();
 </script>
 </body>
