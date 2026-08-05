@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="tl">
 <head>
@@ -35,79 +36,60 @@
 </div>
 
 <script>
-(function() { 
-    const COUNTER_KEY = 'balase_acp_v1_official'; // Ginawa kong unique para sayo
-    const countEl = document.getElementById('count');
-    const downloadBtn = document.getElementById('downloadBtn');
-    const statusEl = document.getElementById('statusMessage');
-
-    function formatNumber(num) { 
-        if (num === undefined || num === null) return '0'; 
-        return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ','); 
-    }
-
-    async function fetchCountAPI(increment = false) {
-        const amount = increment ? 1 : 0;
-        const url = `https://api.countapi.xyz/hit/${COUNTER_KEY}?amount=${amount}`;
-        try {
-            const res = await fetch(url, { mode: 'cors', cache: 'no-cache' });
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            const data = await res.json();
-            return data.value;
-        } catch (e) { return null; }
-    }
-
-    async function fetchLoliCount(increment = false) {
-        const amount = increment ? 1 : 0;
-        const url = `https://count.getloli.com/hit/${COUNTER_KEY}?amount=${amount}`;
-        try {
-            const res = await fetch(url, { mode: 'cors', cache: 'no-cache' });
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            const data = await res.json();
-            return data.value;
-        } catch (e) { return null; }
-    }
-    
-    function getLocalCount() { try { return parseInt(localStorage.getItem(COUNTER_KEY), 10) || 0; } catch (_) { return 0; } }
-    function setLocalCount(val) { try { localStorage.setItem(COUNTER_KEY, String(val)); } catch (_) {} }
-
-    async function getCount(increment = false) {
-        let val = await fetchCountAPI(increment);
-        if (val !== null) { setLocalCount(val); return val; }
-        val = await fetchLoliCount(increment);
-        if (val !== null) { setLocalCount(val); return val; }
-        let localVal = getLocalCount();
-        if (increment) { localVal += 1; setLocalCount(localVal); }
-        return localVal;
-    }
-
-    async function updateCounter(increment = false) {
-        const val = await getCount(increment);
-        countEl.innerText = formatNumber(val);
-        return val;
-    }
-
-    // Load count on open
-    updateCounter(false);
-
-    // Handle Download Click
-    let isProcessing = false;
-    downloadBtn.addEventListener('click', async function(e) { 
-        if (isProcessing) return;
-        isProcessing = true;
-        downloadBtn.disabled = true;
-        statusEl.innerText = '⏳ Counting...';
+    (function() {
+        const COUNTER_KEY = 'balase_acp_jared_v1'; // Ginawa ko ng unique para sayo
+        const countEl = document.getElementById('count');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const statusEl = document.getElementById('statusMessage');
         
-        await updateCounter(true); // +1 muna sa counter
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        }
         
-        statusEl.innerText = '✅ Download started!';
-        setTimeout(() => { 
-            statusEl.innerText = ''; 
-            isProcessing = false;
-            downloadBtn.disabled = false;
-        }, 3000);
-    }); 
-})();
+        // BAGONG API - HINDI BINABLOCK
+        async function getCount(increment = false) {
+            const action = increment ? 'up' : 'get';
+            const url = `https://api.counterapi.dev/v1/${action}?namespace=balase&key=${COUNTER_KEY}`;
+            
+            try {
+                const res = await fetch(url, { cache: 'no-cache' });
+                if (!res.ok) throw new Error();
+                const data = await res.json();
+                const val = data.count || 0;
+                localStorage.setItem(COUNTER_KEY, val); // backup
+                return val;
+            } catch (e) {
+                // Fallback sa local pag offline/blocked
+                let local = parseInt(localStorage.getItem(COUNTER_KEY) || 0);
+                if (increment) {
+                    local++;
+                    localStorage.setItem(COUNTER_KEY, local);
+                }
+                return local;
+            }
+        }
+        
+        async function updateCounter(increment = false, showMsg = false) {
+            const val = await getCount(increment);
+            countEl.innerText = formatNumber(val);
+            if (showMsg) {
+                statusEl.innerText = '✅ Download counted!';
+                setTimeout(() => statusEl.innerText = '', 3000);
+            }
+        }
+        
+        // 1. Load count pag open
+        updateCounter(false);
+        
+        // 2. Pag click
+        let isProcessing = false;
+        downloadBtn.addEventListener('click', (e) => {
+            if (isProcessing) return;
+            isProcessing = true;
+            updateCounter(true, true);
+            setTimeout(() => isProcessing = false, 1000);
+        });
+    })();
 </script>
 </body>
 </html>
