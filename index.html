@@ -36,7 +36,7 @@
 
 <script>
 (function() {
-    var COUNTER_KEY = 'balase_acp_jared_final'; // ginawa ko ng final key
+    var COUNTER_KEY = 'jared-balase-acp'; // ito na yung permanent key mo
     var countEl = document.getElementById('count');
     var downloadBtn = document.getElementById('downloadBtn');
     var statusEl = document.getElementById('statusMessage');
@@ -45,41 +45,55 @@
         return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     }
 
-    // 1. SHOW LOCAL MUNA PARA INSTANT
+    // 1. SHOW LOCAL MUNA
     var localCount = parseInt(localStorage.getItem(COUNTER_KEY) || '0');
     countEl.innerText = formatNumber(localCount);
 
-    // 2. IMG TRICK + JSONP para makuha talaga yung server count
-    function hitCounter(increment, callback) {
-        var action = increment? 'up' : 'get';
-        var callbackName = 'cb_' + new Date().getTime();
-        var url = 'https://api.counterapi.dev/v1/' + action + '?namespace=balase&key=' + COUNTER_KEY + '&callback=' + callbackName;
+    // 2. GAMIT NG hits.sh - HINDI BINABLOCK AT MAY IMAGE RESPONSE
+    function updateHit(increment) {
+        var url = 'https://hits.sh/jaredbalase01.github.io/download.svg?style=flat&label=downloads&color=1f6feb&logo=github';
+        
+        if(increment) {
+            // Para mag +1, dagdag tayo ng unique param
+            url += '&t=' + new Date().getTime();
+        }
 
-        // Gumawa ng global function para kunin yung sagot
-        window[callbackName] = function(data) {
-            var serverCount = data.count || localCount;
-            localStorage.setItem(COUNTER_KEY, serverCount);
-            countEl.innerText = formatNumber(serverCount);
-            if(callback) callback(serverCount);
-            // linis
-            document.head.removeChild(script);
-            delete window[callbackName];
-        };
-
-        var script = document.createElement('script');
-        script.src = url;
-        script.onerror = function() {
-            // Pag offline, gamit local
+        var img = new Image();
+        img.onload = function() {
+            // Pag nagload yung image, ibig sabihin counted na
+            // Hindi natin makukuha exact number dito, kaya local muna
             if(increment) {
                 localCount++;
                 localStorage.setItem(COUNTER_KEY, localCount);
             }
             countEl.innerText = formatNumber(localCount);
-            if(callback) callback(localCount);
         };
-        document.head.appendChild(script);
+        img.onerror = function() {
+            // Pag offline
+            if(increment) {
+                localCount++;
+                localStorage.setItem(COUNTER_KEY, localCount);
+            }
+            countEl.innerText = formatNumber(localCount);
+        };
+        img.src = url;
     }
 
-    // Load
+    // Load pag open - para mag register na may bisita
+    updateHit(false); 
+
+    // Pag click - dito mag +1
+    var isProcessing = false;
+    downloadBtn.onclick = function() {
+        if(isProcessing) return;
+        isProcessing = true;
+
+        updateHit(true); // +1 sa hits.sh at sa local
+        
+        statusEl.innerText = '✅ Download counted!';
+        setTimeout(function(){statusEl.innerText = ''; isProcessing = false;}, 2000);
+    };
+})();
+</script>
 </body>
 </html>
