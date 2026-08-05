@@ -1,658 +1,244 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
-  <title>Balase.h · Arduino + ESP32 Uploader</title>
+  <title>Balase Compiler - Download</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    /* ----- RESET & BASE ----- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
-      background: #0f172a;
-      font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+      font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+      background: #0d1117;
+      color: #c9d1d9;
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 1rem;
+      padding: 20px;
+      margin: 0;
     }
+
+    /* ----- CARD – fluid width, perfect on phone & desktop ----- */
     .card {
-      max-width: 1400px;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 24px;
+      padding: 2rem 1.8rem;
       width: 100%;
-      background: #1e293b;
-      border-radius: 2.5rem;
-      padding: 1.5rem 1.5rem 1.2rem;
-      box-shadow: 0 25px 50px -8px rgba(0,0,0,0.8);
-      border: 1px solid #334155;
+      max-width: 560px;          /* comfortable max on desktop */
+      margin: 0 auto;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.6);
+      transition: padding 0.2s ease;
     }
+
+    /* ----- TYPOGRAPHY & SPACING (responsive) ----- */
     h1 {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 0.4rem 0.8rem;
-      font-weight: 500;
-      font-size: 1.6rem;
-      letter-spacing: -0.3px;
-      color: #e2e8f0;
-      margin-bottom: 0.3rem;
-      border-bottom: 2px solid #334155;
-      padding-bottom: 0.5rem;
+      color: #58a6ff;
+      font-size: clamp(1.8rem, 6vw, 2.6rem);
+      letter-spacing: 1px;
+      margin-bottom: 0.25rem;
+      font-weight: 700;
+      word-break: break-word;
     }
-    h1 small {
-      font-size: 0.85rem;
-      font-weight: 400;
-      color: #94a3b8;
-      margin-left: 0.2rem;
+
+    .sub-headline {
+      font-size: clamp(1rem, 3vw, 1.2rem);
+      color: #8b949e;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px dashed #30363d;
+      padding-bottom: 0.75rem;
     }
-    .badge {
-      background: #2d3b52;
-      padding: 0.2rem 0.9rem;
+
+    .version {
+      background: #238636;
+      padding: 0.4rem 1.4rem;
       border-radius: 40px;
-      font-size: 0.75rem;
-      color: #b9c7e0;
-      white-space: nowrap;
+      display: inline-block;
+      font-size: clamp(0.95rem, 2.5vw, 1.1rem);
+      font-weight: 600;
+      color: white;
+      letter-spacing: 0.3px;
+      margin: 0.5rem 0 1.2rem 0;
     }
-    .grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.5rem;
-      margin-top: 0.5rem;
+
+    .downloads {
+      font-size: clamp(1.1rem, 3vw, 1.4rem);
+      margin: 1.2rem 0 1.8rem 0;
+      background: #0d1117;
+      padding: 0.6rem 1rem;
+      border-radius: 40px;
+      display: inline-block;
+      border: 1px solid #30363d;
     }
-    @media (max-width: 760px) {
-      .grid { grid-template-columns: 1fr; gap: 1.2rem; }
-      .card { padding: 1rem; }
-      h1 { font-size: 1.3rem; }
-    }
-    .panel {
-      background: #0f172a;
-      border-radius: 1.8rem;
-      border: 1px solid #334155;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-    .panel-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #1e293b;
-      padding: 0.4rem 1rem;
-      border-bottom: 1px solid #2d3b52;
-      color: #cbd5e1;
-      font-size: 0.8rem;
-      font-weight: 500;
-      flex-wrap: wrap;
-      gap: 0.2rem 0.6rem;
-    }
-    .panel-body {
-      padding: 0.7rem 0.9rem 0.9rem;
-      flex: 1;
-      min-height: 300px;
-      display: flex;
-      flex-direction: column;
-    }
-    textarea {
-      width: 100%;
-      height: 420px;
-      background: #0b111e;
-      border: none;
-      border-radius: 1.2rem;
-      padding: 0.9rem 1rem;
-      font-family: 'JetBrains Mono', 'Fira Code', monospace;
-      font-size: 0.85rem;
-      line-height: 1.6;
-      color: #e6edf5;
-      resize: vertical;
-      outline: 1px solid #1e2b3f;
-      transition: outline 0.15s;
-      tab-size: 4;
-      flex: 1;
-      min-height: 240px;
-    }
-    textarea:focus { outline: 2px solid #5b7c9e; }
-    .actions {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 0.4rem 0.6rem;
-      margin: 0.6rem 0 0.1rem;
-    }
-    .btn {
-      background: #2d3b52;
-      border: none;
-      padding: 0.4rem 1rem;
-      border-radius: 30px;
-      font-weight: 500;
-      font-size: 0.8rem;
-      color: #eef2f6;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.3rem;
-      transition: 0.15s;
-      border: 1px solid #3e4f68;
-      touch-action: manipulation;
-      user-select: none;
-    }
-    .btn-primary { background: #3b6b9b; border-color: #5782b0; color: white; }
-    .btn-primary:hover { background: #4a7eb3; border-color: #6a96c9; transform: scale(0.97); }
-    .btn-primary:active { transform: scale(0.94); }
-    .btn-success { background: #2d6b4f; border-color: #3f8a66; }
-    .btn-success:hover { background: #3a805e; }
-    .btn-outline { background: transparent; border: 1px solid #4a5f7a; }
-    .btn-outline:hover { background: #26344b; }
-    .btn-copy { background: #3d3f6b; border-color: #5a5d8f; }
-    .btn-copy:hover { background: #555991; }
-    .copy-feedback {
-      font-size: 0.7rem;
-      color: #9bb8d9;
-      min-width: 70px;
-    }
-    .footer {
-      display: flex;
-      justify-content: flex-end;
-      flex-wrap: wrap;
-      margin-top: 0.6rem;
-      color: #5f7393;
-      font-size: 0.7rem;
-      border-top: 1px solid #1e2d42;
-      padding-top: 0.6rem;
-      gap: 0.3rem 0.8rem;
-    }
-    .footer code {
-      background: #1a253a;
-      padding: 0.1rem 0.6rem;
-      border-radius: 30px;
-      color: #afc6e6;
-    }
-    .balase-tag {
-      font-family: monospace;
-      background: #1d2b40;
+
+    .downloads b {
+      color: #f0f6fc;
+      background: #1f6feb33;
       padding: 0.1rem 0.7rem;
       border-radius: 30px;
-      color: #b6cef0;
+      margin-left: 4px;
     }
-    #uploadStatus {
-      font-size: 0.75rem;
-      color: #b6d0f0;
-      padding: 0.2rem 0.6rem;
-      background: #1a263b;
-      border-radius: 40px;
-      white-space: nowrap;
-      max-width: 240px;
-      overflow: hidden;
-      text-overflow: ellipsis;
+
+    /* ----- BUTTON – touch-friendly, wide, responsive ----- */
+    .btn {
+      display: inline-block;
+      width: 100%;
+      max-width: 320px;
+      padding: 1rem 1.2rem;
+      background: #1f6feb;
+      color: white;
+      text-decoration: none;
+      border-radius: 60px;
+      font-weight: 700;
+      font-size: clamp(1.2rem, 4vw, 1.5rem);
+      letter-spacing: 0.5px;
+      transition: background 0.2s, transform 0.1s ease, box-shadow 0.2s;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 6px 0 #0f4a9e;
+      text-align: center;
+      margin: 0.5rem auto 0.2rem auto;
     }
+
+    .btn:hover {
+      background: #2b7af0;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 0 #0f4a9e;
+    }
+
+    .btn:active {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 #0f4a9e;
+    }
+
+    /* ----- small extra spacing & helper ----- */
+    .card p {
+      margin: 0.4rem 0;
+    }
+
+    .footer-note {
+      margin-top: 1.6rem;
+      font-size: 0.85rem;
+      color: #6e7681;
+      border-top: 1px solid #21262d;
+      padding-top: 1.2rem;
+      letter-spacing: 0.3px;
+    }
+
+    /* ----- phone-first: extra breathing for tiny screens ----- */
     @media (max-width: 480px) {
-      textarea { height: 280px; font-size: 0.8rem; padding: 0.7rem; }
-      .btn { font-size: 0.7rem; padding: 0.3rem 0.8rem; }
-      .panel-header { font-size: 0.7rem; padding: 0.3rem 0.7rem; }
-      .footer { font-size: 0.6rem; }
+      .card {
+        padding: 1.6rem 1.2rem;
+        border-radius: 20px;
+      }
+      .btn {
+        max-width: 100%;
+        padding: 0.9rem 1rem;
+      }
+      .downloads {
+        padding: 0.4rem 0.8rem;
+      }
+    }
+
+    /* optional: desktop fine-tune */
+    @media (min-width: 768px) {
+      .card {
+        padding: 2.8rem 2.5rem;
+      }
+      .btn {
+        max-width: 340px;
+      }
     }
   </style>
 </head>
 <body>
 <div class="card">
-  <h1>
-    ⚡ BALASE.H <span style="font-weight:300;">·</span> 
-    <span style="font-size:1rem;">Ultimate Arduino + ESP32</span>
-    <span class="badge">v9.0 · WebUSB</span>
-    <small style="margin-left:auto;">direct upload · DIO + 115200</small>
-  </h1>
-  <div class="grid">
-    <div class="panel">
-      <div class="panel-header">
-        <span>📝 Balase code</span>
-        <span style="color:#8aa4c9;">.balase</span>
-      </div>
-      <div class="panel-body" style="padding-top:0.6rem;">
-        <textarea id="balaseInput" spellcheck="false">// ===== BALASE.H ULTIMATE =====
-// Direct pin control, delays, serial, and more!
+  <h1>⚡ Balase Compiler ⚡</h1>
+  <p class="sub-headline">Arduino Programming gamit sariling Wikang Filipino</p>
 
-// ---- OUTPUT ----
-4 = ON          // pin 4 HIGH
-1s              // delay 1 second
-4 = OFF         // pin 4 LOW
-1s
+  <div class="version">Version: <b>1.0</b></div>
 
-// ---- INPUT ----
-i3              // pin 3 as INPUT
-PRINTLN(IN(3))  // read and print
+  <div class="downloads">📥 Total Downloads: <b id="count">Loading...</b></div>
 
-// ---- TOGGLE ----
-TOGGLE(4)       // toggle pin 4
-WAIT(500ms)
+  <a href="BalaseCompiler_v1.0.apk" class="btn" id="downloadBtn" download>
+    ⬇ Download APK
+  </a>
 
-// ---- ANALOG ----
-WRITE(9, 128)   // PWM on pin 9
-DELAY(500)
-WRITE(9, 0)
-
-// ---- BUILT-IN LED ----
-LED             // ON (LOW)
-LEDOFF          // OFF (HIGH)
-LEDTOGGLE       // toggle
-
-// ---- SERIAL ----
-SER             // Serial.begin(9600)
-PRINTLN("Hello Balase!")
-
-// ---- TIME UNITS ----
-2s              // delay 2 seconds
-500ms           // delay 500 ms
-1m              // delay 1 minute (simulated)
-
-// ---- RANDOM ----
-RANDOM(0, 100)  // random number
-
-// ---- CONDITIONALS ----
-IF (IN(3) == HIGH) { PRINTLN("Button pressed"); }</textarea>
-        <div class="actions">
-          <button class="btn btn-primary" id="translateBtn">▶ translate</button>
-          <button class="btn btn-outline" id="clearBtn">clear</button>
-          <button class="btn btn-success" id="uploadBtn">⬆ upload</button>
-          <span style="flex:1;"></span>
-          <span id="uploadStatus">🔌 ready</span>
-          <button class="btn btn-copy" id="copyBtn">📋 copy</button>
-          <span id="copyFeedback" class="copy-feedback"></span>
-        </div>
-      </div>
-    </div>
-    <div class="panel">
-      <div class="panel-header">
-        <span>⚙️ C++ (Arduino/ESP32) </span>
-        <span style="color:#8aa4c9;">.cpp</span>
-      </div>
-      <div class="panel-body" style="padding-top:0.6rem;">
-        <textarea id="cppOutput" spellcheck="false" readonly style="background:#0b111e; color:#d4e0f0;">// translated C++ will appear here</textarea>
-      </div>
-    </div>
-  </div>
-  <div class="footer">
-    <span><span class="balase-tag">balase.h</span>  ·  <code>4 = ON</code>  ·  <code>1s</code>  ·  <code>i3</code>  ·  <code>TOGGLE(pin)</code>  ·  <code>LED</code>  ·  <code>SER</code></span>
-    <span style="color:#6b85a8;">⚡ WebUSB upload · DIO + 115200</span>
-  </div>
+  <div class="footer-note">✨ responsive • open source • filipino</div>
 </div>
+
 <script>
   (function() {
-    const inputArea = document.getElementById('balaseInput');
-    const outputArea = document.getElementById('cppOutput');
-    const translateBtn = document.getElementById('translateBtn');
-    const clearBtn = document.getElementById('clearBtn');
-    const copyBtn = document.getElementById('copyBtn');
-    const copyFeedback = document.getElementById('copyFeedback');
-    const uploadBtn = document.getElementById('uploadBtn');
-    const uploadStatus = document.getElementById('uploadStatus');
+    const counterKey = 'balase_compiler_v1';
+    const countEl = document.getElementById('count');
+    const downloadBtn = document.getElementById('downloadBtn');
 
-    // ------------------------------------------------------------
-    //  TRANSLATOR  (Balase.h → C++ Arduino) - Full spec
-    // ------------------------------------------------------------
-    function translateBalaseToCpp(code) {
-      const lines = code.split('\n');
-      const setupStatements = [];
-      const loopStatements = [];
-      const comments = [];
-      const outputPins = new Set();
+    // --- helper: format number with commas (optional) ---
+    function formatNumber(num) {
+      return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
 
-      function addSetup(line) { setupStatements.push(line); }
-      function addLoop(line) { loopStatements.push(line); }
-
-      function parseTime(str) {
-        const match = str.match(/^(\d+)(ms|s|m|h)$/i);
-        if (!match) return null;
-        const val = parseInt(match[1], 10);
-        const unit = match[2].toLowerCase();
-        let mult = 1;
-        if (unit === 's') mult = 1000;
-        else if (unit === 'm') mult = 60000;
-        else if (unit === 'h') mult = 3600000;
-        return val * mult;
-      }
-
-      for (let raw of lines) {
-        let trimmed = raw.trim();
-        if (trimmed === '') continue;
-        if (trimmed.startsWith('//') || trimmed.startsWith('/*') || trimmed.startsWith('*')) {
-          comments.push(raw);
-          continue;
-        }
-
-        const outputMatch = trimmed.match(/^(\d+)\s*=\s*(ON|OFF)\s*;?$/i);
-        if (outputMatch) {
-          const pin = outputMatch[1];
-          const state = outputMatch[2].toUpperCase();
-          const highLow = (state === 'ON') ? 'HIGH' : 'LOW';
-          outputPins.add(pin);
-          addLoop(`digitalWrite(${pin}, ${highLow});`);
-          continue;
-        }
-
-        const delayMatch = trimmed.match(/^(\d+)(ms|s|m|h)\s*;?$/i);
-        if (delayMatch) {
-          const ms = parseTime(delayMatch[0]);
-          if (ms !== null) { addLoop(`delay(${ms});`); continue; }
-        }
-
-        const waitMatch = trimmed.match(/^WAIT\s*\(\s*(\d+)(ms|s|m|h)?\s*\)\s*;?$/i);
-        if (waitMatch) {
-          const val = parseInt(waitMatch[1], 10);
-          const unit = waitMatch[2] ? waitMatch[2].toLowerCase() : 'ms';
-          let mult = 1;
-          if (unit === 's') mult = 1000;
-          else if (unit === 'm') mult = 60000;
-          else if (unit === 'h') mult = 3600000;
-          addLoop(`delay(${val * mult});`);
-          continue;
-        }
-
-        const inputMatch = trimmed.match(/^i(\d+)\s*;?$/i);
-        if (inputMatch) { addSetup(`pinMode(${inputMatch[1]}, INPUT);`); continue; }
-
-        const pullupMatch = trimmed.match(/^ip(\d+)\s*;?$/i);
-        if (pullupMatch) { addSetup(`pinMode(${pullupMatch[1]}, INPUT_PULLUP);`); continue; }
-
-        const toggleMatch = trimmed.match(/^TOGGLE(?:_STATE)?\s*\(\s*(\d+)\s*\)\s*;?$/i);
-        if (toggleMatch) {
-          const pin = toggleMatch[1];
-          addLoop(`digitalWrite(${pin}, !digitalRead(${pin}));`);
-          continue;
-        }
-
-        const printLn = trimmed.match(/^PRINTLN\s*\(\s*(.+)\s*\)\s*;?$/i);
-        if (printLn) { addLoop(`Serial.println(${printLn[1]});`); continue; }
-        const printMatch = trimmed.match(/^PRINT\s*\(\s*(.+)\s*\)\s*;?$/i);
-        if (printMatch) { addLoop(`Serial.print(${printMatch[1]});`); continue; }
-        const printfMatch = trimmed.match(/^PRINTF\s*\(\s*(.+)\s*\)\s*;?$/i);
-        if (printfMatch) { addLoop(`Serial.printf(${printfMatch[1]});`); continue; }
-
-        const readMatch = trimmed.match(/^IN\s*\(\s*(\d+)\s*\)\s*;?$/i);
-        if (readMatch) { addLoop(`digitalRead(${readMatch[1]});`); continue; }
-
-        const writeMatch = trimmed.match(/^WRITE\s*\(\s*(\d+)\s*,\s*(.+)\s*\)\s*;?$/i);
-        if (writeMatch) { addLoop(`analogWrite(${writeMatch[1]}, ${writeMatch[2]});`); continue; }
-
-        const analogReadMatch = trimmed.match(/^READ\s*\(\s*(\d+)\s*\)\s*;?$/i);
-        if (analogReadMatch) { addLoop(`analogRead(${analogReadMatch[1]});`); continue; }
-
-        if (/^LED\s*;?$/.test(trimmed)) { addLoop(`digitalWrite(LED_BUILTIN, LOW);`); continue; }
-        if (/^LEDOFF\s*;?$/.test(trimmed)) { addLoop(`digitalWrite(LED_BUILTIN, HIGH);`); continue; }
-        if (/^LEDTOGGLE\s*;?$/.test(trimmed)) { addLoop(`digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));`); continue; }
-
-        const serMatch = trimmed.match(/^SER(?:_(\d+))?\s*;?$/i);
-        if (serMatch) {
-          let baud = '9600';
-          if (serMatch[1]) baud = serMatch[1];
-          addSetup(`Serial.begin(${baud});`);
-          continue;
-        }
-
-        const randomMatch = trimmed.match(/^RANDOM\s*\(\s*(.+)\s*,\s*(.+)\s*\)\s*;?$/i);
-        if (randomMatch) { addLoop(`random(${randomMatch[1]}, ${randomMatch[2]});`); continue; }
-
-        const donMatch = trimmed.match(/^DON\s*\(\s*(\d+)\s*\)\s*;?$/i);
-        if (donMatch) { outputPins.add(donMatch[1]); addLoop(`digitalWrite(${donMatch[1]}, HIGH);`); continue; }
-        const doffMatch = trimmed.match(/^DOFF\s*\(\s*(\d+)\s*\)\s*;?$/i);
-        if (doffMatch) { outputPins.add(doffMatch[1]); addLoop(`digitalWrite(${doffMatch[1]}, LOW);`); continue; }
-
-        const dinMatch = trimmed.match(/^DIN\s*\(\s*(\d+)\s*\)\s*;?$/i);
-        if (dinMatch) {
-          const pin = dinMatch[1];
-          addSetup(`pinMode(${pin}, INPUT);`);
-          addLoop(`digitalRead(${pin});`);
-          continue;
-        }
-
-        const mapMatch = trimmed.match(/^MAP\s*\(\s*(.+)\s*,\s*(.+)\s*,\s*(.+)\s*,\s*(.+)\s*,\s*(.+)\s*\)\s*;?$/i);
-        if (mapMatch) { addLoop(`map(${mapMatch[1]}, ${mapMatch[2]}, ${mapMatch[3]}, ${mapMatch[4]}, ${mapMatch[5]});`); continue; }
-        const constrainMatch = trimmed.match(/^CONSTRAIN\s*\(\s*(.+)\s*,\s*(.+)\s*,\s*(.+)\s*\)\s*;?$/i);
-        if (constrainMatch) { addLoop(`constrain(${constrainMatch[1]}, ${constrainMatch[2]}, ${constrainMatch[3]});`); continue; }
-
-        const absMatch = trimmed.match(/^ABS\s*\(\s*(.+)\s*\)\s*;?$/i);
-        if (absMatch) { addLoop(`abs(${absMatch[1]});`); continue; }
-        const minMatch = trimmed.match(/^MIN\s*\(\s*(.+)\s*,\s*(.+)\s*\)\s*;?$/i);
-        if (minMatch) { addLoop(`min(${minMatch[1]}, ${minMatch[2]});`); continue; }
-        const maxMatch = trimmed.match(/^MAX\s*\(\s*(.+)\s*,\s*(.+)\s*\)\s*;?$/i);
-        if (maxMatch) { addLoop(`max(${maxMatch[1]}, ${maxMatch[2]});`); continue; }
-        const sqrtMatch = trimmed.match(/^SQRT\s*\(\s*(.+)\s*\)\s*;?$/i);
-        if (sqrtMatch) { addLoop(`sqrt(${sqrtMatch[1]});`); continue; }
-        const powMatch = trimmed.match(/^POW\s*\(\s*(.+)\s*,\s*(.+)\s*\)\s*;?$/i);
-        if (powMatch) { addLoop(`pow(${powMatch[1]}, ${powMatch[2]});`); continue; }
-        const sinMatch = trimmed.match(/^SIN\s*\(\s*(.+)\s*\)\s*;?$/i);
-        if (sinMatch) { addLoop(`sin(${sinMatch[1]});`); continue; }
-        const cosMatch = trimmed.match(/^COS\s*\(\s*(.+)\s*\)\s*;?$/i);
-        if (cosMatch) { addLoop(`cos(${cosMatch[1]});`); continue; }
-        const tanMatch = trimmed.match(/^TAN\s*\(\s*(.+)\s*\)\s*;?$/i);
-        if (tanMatch) { addLoop(`tan(${tanMatch[1]});`); continue; }
-
-        const delayFunc = trimmed.match(/^DELAY\s*\(\s*(.+)\s*\)\s*;?$/i);
-        if (delayFunc) { addLoop(`delay(${delayFunc[1]});`); continue; }
-        const delayUFunc = trimmed.match(/^DELAYU\s*\(\s*(.+)\s*\)\s*;?$/i);
-        if (delayUFunc) { addLoop(`delayMicroseconds(${delayUFunc[1]});`); continue; }
-
-        if (/^NOW\s*;?$/.test(trimmed)) { addLoop('millis();'); continue; }
-        if (/^NOWU\s*;?$/.test(trimmed)) { addLoop('micros();'); continue; }
-
-        const randSeed = trimmed.match(/^RANDSEED\s*\(\s*(.+)\s*\)\s*;?$/i);
-        if (randSeed) { addSetup(`randomSeed(${randSeed[1]});`); continue; }
-
-        const bitMatch = trimmed.match(/^BIT\s*\(\s*(.+)\s*\)\s*;?$/i);
-        if (bitMatch) { addLoop(`bit(${bitMatch[1]});`); continue; }
-        const bitReadMatch = trimmed.match(/^BITREAD\s*\(\s*(.+)\s*,\s*(.+)\s*\)\s*;?$/i);
-        if (bitReadMatch) { addLoop(`bitRead(${bitReadMatch[1]}, ${bitReadMatch[2]});`); continue; }
-        const bitWriteMatch = trimmed.match(/^BITWRITE\s*\(\s*(.+)\s*,\s*(.+)\s*,\s*(.+)\s*\)\s*;?$/i);
-        if (bitWriteMatch) { addLoop(`bitWrite(${bitWriteMatch[1]}, ${bitWriteMatch[2]}, ${bitWriteMatch[3]});`); continue; }
-        const bitSetMatch = trimmed.match(/^BITSET\s*\(\s*(.+)\s*,\s*(.+)\s*\)\s*;?$/i);
-        if (bitSetMatch) { addLoop(`bitSet(${bitSetMatch[1]}, ${bitSetMatch[2]});`); continue; }
-        const bitClearMatch = trimmed.match(/^BITCLEAR\s*\(\s*(.+)\s*,\s*(.+)\s*\)\s*;?$/i);
-        if (bitClearMatch) { addLoop(`bitClear(${bitClearMatch[1]}, ${bitClearMatch[2]});`); continue; }
-        const lowByteMatch = trimmed.match(/^LOWBYTE\s*\(\s*(.+)\s*\)\s*;?$/i);
-        if (lowByteMatch) { addLoop(`lowByte(${lowByteMatch[1]});`); continue; }
-        const highByteMatch = trimmed.match(/^HIGHBYTE\s*\(\s*(.+)\s*\)\s*;?$/i);
-        if (highByteMatch) { addLoop(`highByte(${highByteMatch[1]});`); continue; }
-
-        if (/^INTERRUPTS\s*;?$/.test(trimmed)) { addLoop('interrupts();'); continue; }
-        if (/^NOINTERRUPTS\s*;?$/.test(trimmed)) { addLoop('noInterrupts();'); continue; }
-
-        const attachMatch = trimmed.match(/^ATTACH\s*\(\s*(.+)\s*,\s*(.+)\s*,\s*(.+)\s*\)\s*;?$/i);
-        if (attachMatch) { addLoop(`attachInterrupt(${attachMatch[1]}, ${attachMatch[2]}, ${attachMatch[3]});`); continue; }
-        const detachMatch = trimmed.match(/^DETACH\s*\(\s*(.+)\s*\)\s*;?$/i);
-        if (detachMatch) { addLoop(`detachInterrupt(${detachMatch[1]});`); continue; }
-
-        const btnPressed = trimmed.match(/^BTNPRESSED\s*\(\s*(\d+)\s*\)\s*;?$/i);
-        if (btnPressed) { addLoop(`(digitalRead(${btnPressed[1]}) == LOW)`); continue; }
-        const btnReleased = trimmed.match(/^BTNRELEASED\s*\(\s*(\d+)\s*\)\s*;?$/i);
-        if (btnReleased) { addLoop(`(digitalRead(${btnReleased[1]}) == HIGH)`); continue; }
-        const btnRead = trimmed.match(/^BTNREAD\s*\(\s*(\d+)\s*\)\s*;?$/i);
-        if (btnRead) { addLoop(`digitalRead(${btnRead[1]});`); continue; }
-
-        const szMatch = trimmed.match(/^SZ\s*\(\s*(.+)\s*\)\s*;?$/i);
-        if (szMatch) { addLoop(`(sizeof(${szMatch[1]}) / sizeof(${szMatch[1]}[0]))`); continue; }
-        const lenMatch = trimmed.match(/^LEN\s*\(\s*(.+)\s*\)\s*;?$/i);
-        if (lenMatch) { addLoop(`(sizeof(${lenMatch[1]}) / sizeof(${lenMatch[1]}[0]))`); continue; }
-
-        if (/^WIFI/.test(trimmed)) { addLoop(trimmed); continue; }
-
-        if (/^\s*(if|else|for|while|do|switch|case|break|continue|return|goto|const|int|float|char|bool|String|byte|unsigned|long|void|Serial|pinMode|digitalWrite|digitalRead|analogWrite|analogRead|delay|millis|micros|random|map|constrain|abs|min|max|pow|sqrt|sin|cos|tan|bit|bitRead|bitWrite|bitSet|bitClear|lowByte|highByte|attachInterrupt|detachInterrupt|interrupts|noInterrupts|WiFi)/.test(trimmed)) {
-          addLoop(trimmed);
-          continue;
-        }
-
-        comments.push(`// ${raw}`);
-      }
-
-      for (const pin of outputPins) {
-        const modeLine = `pinMode(${pin}, OUTPUT);`;
-        const already = setupStatements.some(s => s.includes(`pinMode(${pin},`) && s.includes('OUTPUT'));
-        if (!already) setupStatements.push(modeLine);
-      }
-
-      const finalCpp = [];
-      finalCpp.push('#include <Arduino.h>');
-      finalCpp.push('');
-      for (const c of comments) {
-        if (c.trim().startsWith('//') || c.trim().startsWith('/*') || c.trim().startsWith('*')) finalCpp.push(c);
-      }
-      if (comments.length > 0) finalCpp.push('');
-
-      finalCpp.push('void setup() {');
-      if (setupStatements.length === 0) finalCpp.push('  // (no setup)');
-      else for (const s of setupStatements) finalCpp.push('  ' + s);
-      finalCpp.push('}');
-      finalCpp.push('');
-
-      finalCpp.push('void loop() {');
-      if (loopStatements.length === 0) finalCpp.push('  // (no loop)');
-      else for (let s of loopStatements) {
-        const ts = s.trim();
-        if (ts.length > 0 && !ts.endsWith(';') && !ts.endsWith('{') && !ts.endsWith('}') &&
-            !/^(if|else|for|while|do|switch|case|break|continue|return|goto|const|int|float|char|bool|String|byte|unsigned|long|void|Serial|pinMode|digitalWrite|digitalRead|analogWrite|analogRead|delay|millis|micros|random|map|constrain|abs|min|max|pow|sqrt|sin|cos|tan|bit|bitRead|bitWrite|bitSet|bitClear|lowByte|highByte|attachInterrupt|detachInterrupt|interrupts|noInterrupts|WiFi)/.test(ts)) {
-          finalCpp.push('  ' + s + ';');
+    // --- 1. fetch current count ---
+    fetch(`https://api.countapi.xyz/get/${counterKey}`)
+      .then(res => {
+        if (!res.ok) throw new Error('Network error');
+        return res.json();
+      })
+      .then(data => {
+        if (data && typeof data.value === 'number') {
+          countEl.innerText = formatNumber(data.value);
         } else {
-          finalCpp.push('  ' + s);
+          countEl.innerText = '0';
         }
-      }
-      finalCpp.push('}');
-      finalCpp.push('');
+      })
+      .catch(() => {
+        // fallback – show 0 if API fails (no visual error)
+        countEl.innerText = '0';
+      });
 
-      let result = finalCpp.join('\n');
-      result = result.replace(/\n{3,}/g, '\n\n');
-      return result;
-    }
-
-    // ------------------------------------------------------------
-    //  UI
-    // ------------------------------------------------------------
-    function doTranslate() {
-      const code = inputArea.value;
-      const translated = translateBalaseToCpp(code);
-      outputArea.value = translated;
-    }
-
-    function clearAll() {
-      inputArea.value = '';
-      outputArea.value = '// translated C++ will appear here';
-      copyFeedback.textContent = '';
-    }
-
-    function copyOutput() {
-      const output = outputArea.value;
-      if (!output || output.trim() === '' || output.includes('translated C++ will appear here')) {
-        copyFeedback.textContent = '⛔ nothing';
-        setTimeout(() => copyFeedback.textContent = '', 1500);
-        return;
-      }
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(output).then(() => {
-          copyFeedback.textContent = '✅ copied!';
-          setTimeout(() => copyFeedback.textContent = '', 2000);
-        }).catch(() => fallbackCopy(output));
+    // --- 2. increment on click (with optimistic UI + fallback) ---
+    downloadBtn.addEventListener('click', function(e) {
+      // Optimistic: add 1 right away for snappy feel (but we'll correct after API)
+      const currentText = countEl.innerText.replace(/,/g, '');
+      const currentNum = parseInt(currentText, 10);
+      if (!isNaN(currentNum)) {
+        countEl.innerText = formatNumber(currentNum + 1);
       } else {
-        fallbackCopy(output);
-      }
-    }
-
-    function fallbackCopy(text) {
-      outputArea.select();
-      try {
-        document.execCommand('copy');
-        copyFeedback.textContent = '✅ copied!';
-      } catch (e) {
-        copyFeedback.textContent = '❌ error';
-      }
-      setTimeout(() => copyFeedback.textContent = '', 2000);
-    }
-
-    // ------------------------------------------------------------
-    //  WebUSB UPLOAD (simulated with DIO + 115200 for ESP32/Arduino)
-    //  On PC: uses WebUSB (Chrome/Edge) 
-    //  On phone: uses WebUSB (Android Chrome) – like ArduinoDroid
-    //  Automatically runs on localhost: we use the browser's WebUSB
-    // ------------------------------------------------------------
-    async function uploadViaWebUSB() {
-      const cppCode = outputArea.value;
-      if (!cppCode || cppCode.includes('translated C++ will appear here')) {
-        uploadStatus.textContent = '⚠️ translate first';
-        return;
+        // if something weird, just set to 1
+        countEl.innerText = '1';
       }
 
-      try {
-        // Request a device with USB vendor: Arduino / ESP32
-        const device = await navigator.usb.requestDevice({
-          filters: [
-            { vendorId: 0x2341 }, // Arduino
-            { vendorId: 0x1A86 }, // CH340
-            { vendorId: 0x10C4 }, // CP210x
-            { vendorId: 0x303A }, // ESP32 (some)
-          ]
+      // Actually hit the API to persist the count
+      fetch(`https://api.countapi.xyz/hit/${counterKey}`)
+        .then(res => {
+          if (!res.ok) throw new Error('Hit failed');
+          return res.json();
+        })
+        .then(data => {
+          if (data && typeof data.value === 'number') {
+            countEl.innerText = formatNumber(data.value);
+          }
+        })
+        .catch(() => {
+          // If API fails, we keep the optimistic number (already incremented)
+          // but we also try to re-fetch to sync (silent)
+          fetch(`https://api.countapi.xyz/get/${counterKey}`)
+            .then(res => res.json())
+            .then(data => {
+              if (data && typeof data.value === 'number') {
+                countEl.innerText = formatNumber(data.value);
+              }
+            })
+            .catch(() => { /* ignore */ });
         });
-
-        uploadStatus.textContent = '🔗 connecting...';
-        await device.open();
-
-        // For ESP32 we set DIO mode and 115200 baud (simulated)
-        // In a real scenario you would send the binary via USB CDC.
-        // Here we simulate by sending the code as a string (for demo)
-        // and we signal success.
-        // In a true uploader you would compile to .bin and flash.
-        // This demo shows the pipeline and WebUSB selection.
-
-        // Simulate selecting configuration: DIO + 115200
-        uploadStatus.textContent = '⚙️ DIO · 115200 baud';
-        await new Promise(r => setTimeout(r, 300));
-
-        // Write the code as a "sketch" (simulated)
-        // Real implementation would use avrdude or esptool via WebUSB
-        // We'll just show a success message after a short delay.
-        uploadStatus.textContent = '📤 uploading...';
-
-        // Simulate transfer
-        await new Promise(r => setTimeout(r, 1200));
-
-        // For demonstration we close the device gracefully
-        await device.close();
-
-        uploadStatus.textContent = '✅ uploaded! (simulated)';
-        setTimeout(() => {
-          uploadStatus.textContent = '🔌 ready';
-        }, 3000);
-
-        // Automatically run on localhost - we just keep the page open.
-        // The browser already runs on localhost if served from there.
-
-      } catch (error) {
-        console.error(error);
-        if (error.message.includes('No device selected')) {
-          uploadStatus.textContent = '⛔ no device selected';
-        } else if (error.message.includes('Access denied')) {
-          uploadStatus.textContent = '⛔ permission denied';
-        } else {
-          uploadStatus.textContent = '❌ error: ' + error.message.slice(0, 30);
-        }
-        setTimeout(() => {
-          uploadStatus.textContent = '🔌 ready';
-        }, 4000);
-      }
-    }
-
-    // Event listeners
-    translateBtn.addEventListener('click', doTranslate);
-    clearBtn.addEventListener('click', clearAll);
-    copyBtn.addEventListener('click', copyOutput);
-    uploadBtn.addEventListener('click', uploadViaWebUSB);
-
-    let debounceTimer;
-    inputArea.addEventListener('input', function() {
-      clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => doTranslate(), 300);
     });
 
-    setTimeout(doTranslate, 80);
-
-    inputArea.addEventListener('keydown', function(e) {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-        e.preventDefault();
-        doTranslate();
-      }
-    });
   })();
 </script>
 </body>
